@@ -1,0 +1,188 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Perl的进程控制(二) | moonshadow778&#39;s blog</title>
+  <meta name="author" content="moonshadow778">
+  
+  <meta name="description" content="moonshadow778&#39;s blog">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="Perl的进程控制(二)"/>
+  <meta property="og:site_name" content="moonshadow778&#39;s blog"/>
+
+  
+    <meta property="og:image" content="undefined"/>
+  
+
+  <link href="/favicon.png" rel="icon">
+  <link rel="alternate" href="/atom.xml" title="moonshadow778&#39;s blog" type="application/atom+xml">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+
+</head>
+
+
+<body>
+  <header id="header" class="inner"><div class="alignleft">
+  <h1><a href="/">moonshadow778&#39;s blog</a></h1>
+  <h2><a href="/">为硅基文明添砖加瓦的一个小小的碳基生命</a></h2>
+</div>
+<nav id="main-nav" class="alignright">
+  <ul>
+    
+      <li><a href="/">首页</a></li>
+    
+      <li><a href="/archives">存档</a></li>
+    
+      <li><a href="/about">关于</a></li>
+    
+      <li><a href="/todolist">ToDo</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+<div class="clearfix"></div></header>
+  <div id="content" class="inner">
+    <div id="main-col" class="alignleft"><div id="wrapper"><article class="post">
+  
+  <div class="post-content">
+    <header>
+      
+        <div class="icon"></div>
+        <time datetime="2014-03-21T09:14:56.000Z"><a href="/2014/03/21/perl-process-control-2/">3月 21 2014</a></time>
+      
+      
+  
+    <h1 class="title">Perl的进程控制(二)</h1>
+  
+
+    </header>
+    <div class="entry">
+      
+        <p>在实际的编程中，启动一个子进程，然后等待其结束，然后父进程接着干别的，这是很理想的情况。经常地，我们会需要一个Timeout的机制，在子进程运行的时间超出了我们的期望，明显情况不对的时候能够及时地终止它。<br>好消息是Perl提供了类似于Unix的信号机制，我们可以在某个信号上注册一个对应该信号的处理逻辑，比如收到ALARM信号的时候就强制退出（杀死）子进程。而父进程通过调用alarm函数使得在指定的时间会有一个SIGALRM信号发送过来，这样就能够通过(控制发送ALARM信号+ALARM信号处理函数）实现一个定时的机制。<br>当然，父进程还是通过waitpid以等待子进程的正常结束，ALARM信号只是用于处理Timeout的情况。所以waitpid之后，要调用“alarm 0”来取消之前的Timeout定时器。<br>一个典型的例子：</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div></pre></td><td class="code"><pre><div class="line"><span class="comment">#!/usr/bin/perl</span></div><div class="line"></div><div class="line"><span class="keyword">use</span> strict;</div><div class="line"><span class="keyword">use</span> POSIX <span class="string">":sys_wait_h"</span>;</div><div class="line"></div><div class="line"><span class="keyword">my</span> <span class="variable">$timeOut</span> = <span class="number">5</span>;</div><div class="line"><span class="keyword">my</span> <span class="variable">$cmd</span> = <span class="string">'ping 10.10.10.10'</span>;</div><div class="line"><span class="keyword">my</span> <span class="variable">$rv</span> = <span class="number">0</span>;</div><div class="line"></div><div class="line"><span class="keyword">my</span> <span class="variable">$child_pid</span> = <span class="keyword">open</span> ( <span class="keyword">my</span> <span class="variable">$CMD</span>, <span class="string">"-|"</span>, <span class="variable">$cmd</span> ) // <span class="keyword">return</span> -<span class="number">1</span>;</div><div class="line"></div><div class="line"><span class="keyword">if</span> ( <span class="variable">$child_pid</span> ) {</div><div class="line">  <span class="comment"># parent process</span></div><div class="line">  <span class="keyword">eval</span> {</div><div class="line">    <span class="comment"># Handle the SIGALRM and kill the child process(es)</span></div><div class="line">    <span class="keyword">local</span> <span class="variable">$SIG</span><span class="string">{ALRM}</span> = <span class="sub"><span class="keyword">sub</span> {</span></div><div class="line">    <span class="keyword">kill</span> <span class="string">'SIGTERM'</span>, <span class="variable">$child_pid</span>;</div><div class="line">    <span class="keyword">sleep</span> <span class="number">1</span>; <span class="comment"># Give the process time to shut down nicely, then murder it.</span></div><div class="line">    <span class="keyword">kill</span> <span class="string">'SIGKILL'</span>, <span class="variable">$child_pid</span>;</div><div class="line">    <span class="keyword">die</span> <span class="string">"timeout\n"</span>;</div><div class="line">    };</div><div class="line"></div><div class="line">    <span class="comment">#-- Start Timer --------------------------------------------------------------#</span></div><div class="line">    <span class="keyword">alarm</span> <span class="variable">$timeOut</span> <span class="keyword">if</span> <span class="variable">$timeOut</span>;</div><div class="line">    <span class="comment"># Wait for child processes. SIGALRM should take care of any hangs.</span></div><div class="line">    <span class="keyword">waitpid</span>(<span class="variable">$child_pid</span>, <span class="number">0</span>);    <span class="comment"># $? is set by waitpid when the process exits.</span></div><div class="line">    <span class="variable">$rv</span> = <span class="variable">$?</span>;</div><div class="line">    <span class="keyword">alarm</span> <span class="number">0</span> <span class="keyword">if</span> <span class="variable">$timeOut</span>;</div><div class="line">    <span class="comment"># -- Time's up! --------------------------------------------------------------#</span></div><div class="line">  };</div><div class="line"></div><div class="line">  <span class="keyword">if</span> ( <span class="variable">$@</span> ) {</div><div class="line">    <span class="comment">#Exception handle</span></div><div class="line">    <span class="keyword">print</span> <span class="string">"Error: <span class="variable">$@</span>\n"</span>;</div><div class="line">    <span class="variable">$rv</span> = -<span class="number">1</span>;</div><div class="line">  }</div><div class="line"></div><div class="line">  <span class="keyword">if</span> (<span class="variable">$rv</span> != <span class="number">0</span>) {</div><div class="line">    <span class="keyword">print</span> <span class="string">"Failed to issue the command:"</span> . <span class="string">"<span class="variable">$rv</span>"</span> . <span class="string">"\n"</span>;</div><div class="line">  } <span class="keyword">else</span> {</div><div class="line">    <span class="keyword">print</span> <span class="string">"Succeed to issue the command:"</span> . <span class="string">"<span class="variable">$rv</span>"</span> . <span class="string">"\n"</span>;</div><div class="line">  }</div><div class="line">}</div><div class="line"><span class="keyword">close</span> <span class="variable">$CMD</span>;</div></pre></td></tr></table></figure>
+
+<p>上面的代码通过一个ping命令来模拟一个运行超时的命令。第10行的open函数用于异步启动一个子进程执行该命令。16~21行的代码实现了针对SIGALRM信号的处理，24行启动了Alarm机制的timer，28行在非timeout的情况（子进程正常退出的情况）下取消timer。<br>注意eval经常被用于这种情况去捕获一个代码block中可能的异常。</p>
+
+      
+    </div>
+    <footer>
+      
+        
+  
+  <div class="categories">
+    <a href="/categories/Perl/">Perl</a>
+  </div>
+
+        
+        
+  <div class="addthis addthis_toolbox addthis_default_style">
+    
+      <a class="addthis_button_facebook_like" fb:like:layout="button_count"></a>
+    
+    
+      <a class="addthis_button_tweet"></a>
+    
+    
+      <a class="addthis_button_google_plusone" g:plusone:size="medium"></a>
+    
+    
+      <a class="addthis_button_pinterest_pinit" pi:pinit:layout="horizontal"></a>
+    
+    <a class="addthis_counter addthis_pill_style"></a>
+  </div>
+  <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js"></script>
+
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+<section id="comment">
+  <h1 class="title">留言</h1>
+
+  
+      <div id="fb-root"></div>
+<script>
+  (function(d, s, id) {
+    var js, fjs = d.getElementsByTagName(s)[0];
+    if (d.getElementById(id)) return;
+    js = d.createElement(s); js.id = id;
+    js.src = "//connect.facebook.net/en_US/all.js#xfbml=1&appId=123456789012345";
+    fjs.parentNode.insertBefore(js, fjs);
+  }(document, 'script', 'facebook-jssdk'));
+</script>
+
+<div class="fb-comments" data-href="http://moonshadow778.github.io/2014/03/21/perl-process-control-2/" data-num-posts="5" data-width="840" data-colorscheme="light"></div>
+      
+  
+</section>
+
+</div></div>
+    <aside id="sidebar" class="alignright">
+  <div class="search">
+  <form action="//google.com/search" method="get" accept-charset="utf-8">
+    <input type="search" name="q" results="0" placeholder="搜索">
+    <input type="hidden" name="q" value="site:moonshadow778.github.io">
+  </form>
+</div>
+
+  
+<div class="widget tag">
+  <h3 class="title">分类</h3>
+  <ul class="entry">
+  
+    <li><a href="/categories/Java/">Java</a><small>1</small></li>
+  
+    <li><a href="/categories/Perl/">Perl</a><small>2</small></li>
+  
+    <li><a href="/categories/Shell/">Shell</a><small>1</small></li>
+  
+  </ul>
+</div>
+
+
+  
+
+  
+
+  <div class="widget tag">
+<h3 class="title">友情链接</h3>
+<ul class="entry">
+<li><a href="http://zipperary.com/" title="Zippera's Blog">Zippera</a></li>
+<li><a href="http://hongbinzuo.github.io/" title="Hongbin Zuo's Blog">Freelemon</a></li>
+</ul>
+</div>
+</aside>
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div class="alignleft">
+  
+  &copy; 2014 moonshadow778
+  
+</div>
+<div class="clearfix"></div></footer>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+  $('.fancybox').fancybox();
+})(jQuery);
+</script>
+
+</body>
+</html>
