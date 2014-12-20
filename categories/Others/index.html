@@ -1,0 +1,186 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Others | moonshadow778&#39;s blog</title>
+  <meta name="author" content="moonshadow778">
+  
+  <meta name="description" content="moonshadow778&#39;s blog">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  
+  <meta property="og:site_name" content="moonshadow778&#39;s blog"/>
+
+  
+    <meta property="og:image" content="undefined"/>
+  
+
+  <link href="/favicon.png" rel="icon">
+  <link rel="alternate" href="/atom.xml" title="moonshadow778&#39;s blog" type="application/atom+xml">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+
+</head>
+
+
+<body>
+  <header id="header" class="inner"><div class="alignleft">
+  <h1><a href="/">moonshadow778&#39;s blog</a></h1>
+  <h2><a href="/">为硅基文明添砖加瓦的一个小小的碳基生命</a></h2>
+</div>
+<nav id="main-nav" class="alignright">
+  <ul>
+    
+      <li><a href="/">首页</a></li>
+    
+      <li><a href="/archives">存档</a></li>
+    
+      <li><a href="/about">关于</a></li>
+    
+      <li><a href="/todolist">ToDo</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+<div class="clearfix"></div></header>
+  <div id="content" class="inner">
+    <div id="main-col" class="alignleft"><div id="wrapper">
+<h2 class="archive-title category">Others</h2>
+
+
+  
+    <article class="post">
+  
+  <div class="post-content">
+    <header>
+      
+        <div class="icon"></div>
+        <time datetime="2014-12-20T06:13:24.000Z"><a href="/2014/12/20/hexo-on-mac/">12月 20 2014</a></time>
+      
+      
+  
+    <h1 class="title"><a href="/2014/12/20/hexo-on-mac/">Hexo环境迁移到Mac</a></h1>
+  
+
+    </header>
+    <div class="entry">
+      
+        <p>作为时下比较流行的Blog搭建环境，Hexo适合程序员的口味，结合Github，有利于提升逼格。唯一让人感到不方便的地方就是如果想换个机器，需要把本地的一些文件（最重要的就是source目录）同步到新机器的环境里。<br>Windows的Hexo环境搭建比较简单，我个人的Blog之前一直是在单位的Windows机器上整的，感觉还好。最近想在家里的MacBook上移植一把，遇到了一些坑儿，在本篇文章里试着整理一下。  </p>
+<ol>
+<li><strong>Git</strong>安装，这个没什么可说的。建议安装最新版的，Mac自带的版本稍微老一些。完成安装后确保新安装的git的路径在<strong>$PATH</strong>里在旧版本的路径之前；  </li>
+<li>为本机Mac生成<strong>SSH Key</strong>并加入Github；  </li>
+<li><strong>Node.js</strong>安装。我是从官网直接下的Node.js for Mac OS X的pkg安装包。直接安装即可；   </li>
+<li>安装好Node.js自动就带了npm，执行</li>
+</ol>
+<figure class="highlight sudo"><figcaption><span>npm install -g hexo```。如果不使用sudo，会报错。我遇到了此步hexo安装时抛出Warning后hang住的情况，Google了若干解决方案都不适用，直到尝试按照某个[贴子](http://stackoverflow.com/questions/15633029/npm-no-longer-working)修改了/usr/local的权限后（```sudo chown -R $USER</span><a href="/usr/local```），安装成功。">link</a></figcaption><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="bullet">5.  </span>执行</div></pre></td></tr></table></figure>
+
+<p>hexo init</p>
+<figure class="highlight 生成hexo环境，copy备份的source文件覆盖本地source目录。"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="bullet">6.  </span>安装theme并修改当前hexo工作目录下的<span class="emphasis">_config.yml配置文件。我的Windows和Mac的Hexo版本不同，所以不能直接使用备份好的_</span>config.yml文件直接覆盖。  </div><div class="line"><span class="bullet">7.  </span>修改下载的theme的配置。至此，可以在我的Mac上继续使用Hexo了。</div><div class="line"><span class="code">    </span></div><div class="line">而为了在不同机器的Hexo环境中共享写好的内容（因为部署上去的hexo生成的blog都是静态的，每次有新的文章都需要重新生成静态页面），基于我使用的light theme，我把以下内容备份到了Github上：  </div><div class="line"><span class="bullet">1. </span>source目录  </div><div class="line"><span class="bullet">2. </span>根目录_config.yml文件  </div><div class="line"><span class="bullet">3. </span>themes／light／_config.yml  </div><div class="line"><span class="bullet">4. </span>themes/light/layout/_widget/blogroll.ejs  </div><div class="line"></div><div class="line">   </div><div class="line">用到的git命令主要有：</div></pre></td></tr></table></figure>
+
+<p>git add <dir or="" file="" path=""></dir></p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="escape">``</span><span class="escape">`</span></div><div class="line">git commit -m <span class="string">"&lt;comment&gt;"</span></div></pre></td></tr></table></figure>
+
+
+
+<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">remote add origin git@github.com:&lt;<span class="keyword">my</span> github <span class="property">name</span>&gt;/&lt;<span class="keyword">my</span> hexo git repo&gt;.git</div></pre></td></tr></table></figure>
+
+
+
+<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git <span class="keyword">push</span> -u origin master</div></pre></td></tr></table></figure>
+
+
+
+<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git rm -r -f --cached &lt;dir <span class="keyword">of</span> file path <span class="keyword">to</span> <span class="keyword">remove</span> <span class="keyword">from</span> stage area&gt;</div></pre></td></tr></table></figure>
+
+
+
+
+
+      
+    </div>
+    <footer>
+      
+        
+        
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+
+  
+
+  <nav id="pagination">
+  
+  
+  <div class="clearfix"></div>
+</nav>
+</div></div>
+    <aside id="sidebar" class="alignright">
+  <div class="search">
+  <form action="//google.com/search" method="get" accept-charset="utf-8">
+    <input type="search" name="q" results="0" placeholder="搜索">
+    <input type="hidden" name="q" value="site:moonshadow778.github.io">
+  </form>
+</div>
+
+  
+<div class="widget tag">
+  <h3 class="title">分类</h3>
+  <ul class="entry">
+  
+    <li><a href="/categories/Java/">Java</a><small>1</small></li>
+  
+    <li><a href="/categories/Others/">Others</a><small>1</small></li>
+  
+    <li><a href="/categories/Perl/">Perl</a><small>2</small></li>
+  
+    <li><a href="/categories/Shell/">Shell</a><small>1</small></li>
+  
+  </ul>
+</div>
+
+
+  
+
+  
+
+  <div class="widget tag">
+<h3 class="title">友情链接</h3>
+<ul class="entry">
+<li><a href="http://zipperary.com/" title="Zippera's Blog">Zippera</a></li>
+<li><a href="http://hongbinzuo.github.io/" title="Hongbin Zuo's Blog">Freelemon</a></li>
+</ul>
+</div>
+</aside>
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div class="alignleft">
+  
+  &copy; 2014 moonshadow778
+  
+</div>
+<div class="clearfix"></div></footer>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+  $('.fancybox').fancybox();
+})(jQuery);
+</script>
+
+</body>
+</html>
